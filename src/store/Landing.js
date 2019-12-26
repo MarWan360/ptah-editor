@@ -1,4 +1,4 @@
-const STACK_SIZE = 5
+const STACK_SIZE = 7
 
 export default {
   state: {

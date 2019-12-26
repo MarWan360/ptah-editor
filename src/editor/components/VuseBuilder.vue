@@ -219,6 +219,12 @@ export default {
     this.initSettings()
 
     this.parsing(css)
+
+    document.addEventListener('keyup', (e) => {
+      if (e.keyCode === 90 && e.ctrlKey) {
+        console.log('undo')
+      }
+    })
   },
 
   updated () {
@@ -257,6 +263,10 @@ export default {
     ...mapActions('User', [
       'getUser'
     ]),
+
+    handleUndo () {
+      console.log(111)
+    },
 
     parsing (textCss) {
       let self = this
