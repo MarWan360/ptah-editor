@@ -6,7 +6,8 @@ export default {
     sectionData: {}, // saved section data,
     groups: [], // landings sections groups
     savedStates: [], // stack of saved states,
-    textEditorActive: false
+    textEditorActive: false,
+    currentStateNumber: []
   },
 
   mutations: {
@@ -36,6 +37,10 @@ export default {
 
     textEditor (state, value) {
       state.textEditorActive = value
+    },
+
+    currentStateNumber (state, value) {
+      state.currentStateNumber = value
     }
   },
 
@@ -52,10 +57,21 @@ export default {
       commit('updateGroups', groups)
     },
 
-    saveState ({ commit, dispatch }, landing) {
+    saveState ({ commit, dispatch, state }, landing) {
       if (localStorage.getItem('guest') === null) {
         commit('saveState', landing)
+        commit('currentStateNumber', state.savedStates.length)
         dispatch('saveLanding', landing, { root: true })
+      }
+    },
+
+    setState ({ state, commit }, number) {
+      console.log(number, JSON.parse(state.savedStates[number]))
+      if (state.savedStates[number]) {
+        commit('currentStateNumber', number)
+        commit('updateCurrentLanding', JSON.parse(state.savedStates[number]), { root: true })
+      } else {
+        console.warn('Cannot load the specified state.', ` -- state: ${number}`)
       }
     }
   },

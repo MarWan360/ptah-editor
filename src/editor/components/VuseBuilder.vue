@@ -145,6 +145,7 @@ export default {
       'isExpanded',
       'device'
     ]),
+    ...mapState('Landing', ['currentStateNumber']),
 
     builder () {
       return this.$builder
@@ -177,7 +178,7 @@ export default {
      */
     'currentLanding.settings': {
       handler () {
-        this.saveState(this.$builder.export('JSON'))
+        // this.saveState(this.$builder.export('JSON'))
       },
       deep: true
     },
@@ -221,8 +222,9 @@ export default {
     this.parsing(css)
 
     document.addEventListener('keyup', (e) => {
-      if (e.keyCode === 90 && e.ctrlKey) {
-        console.log('undo')
+      if (e.code === 'KeyZ' && e.ctrlKey) {
+        let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
+        this.setState(stateNumber)
       }
     })
   },
@@ -258,7 +260,8 @@ export default {
       'toggleAddSectionMenu'
     ]),
     ...mapActions('Landing', [
-      'saveState'
+      'saveState',
+      'setState'
     ]),
     ...mapActions('User', [
       'getUser'
