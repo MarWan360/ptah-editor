@@ -178,7 +178,7 @@ export default {
      */
     'currentLanding.settings': {
       handler () {
-        // this.saveState(this.$builder.export('JSON'))
+        this.saveState(this.$builder.export('JSON'))
       },
       deep: true
     },
@@ -225,6 +225,7 @@ export default {
       if (e.code === 'KeyZ' && e.ctrlKey) {
         let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
         this.setState(stateNumber)
+        this.$builder.set(this.currentLanding)
       }
     })
   },
