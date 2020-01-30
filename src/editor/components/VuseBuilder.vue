@@ -231,9 +231,6 @@ export default {
     if (localStorage.getItem('guest') === null) {
       this.getUser()
     }
-
-    // listener keyUp press
-    document.addEventListener('keyup', this.keyUp)
   },
 
   mounted () {
@@ -244,13 +241,8 @@ export default {
 
     this.parsing(css)
 
-    document.addEventListener('keyup', (e) => {
-      if (e.code === 'KeyZ' && e.ctrlKey) {
-        let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
-        this.setState(stateNumber)
-        this.$builder.set(this.currentLanding)
-      }
-    })
+    // listener keyUp press
+    document.addEventListener('keyup', this.keyUp)
   },
 
   updated () {
@@ -572,6 +564,12 @@ export default {
         } else {
           this.selectedElement = null
         }
+      }
+
+      if (event.code === 'KeyZ' && event.ctrlKey) {
+        let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
+        this.setState(stateNumber)
+        this.$builder.set(this.currentLanding)
       }
     },
 
