@@ -106,7 +106,7 @@
 <script>
 import VuseIcon from './VuseIcon'
 import BuilderLayout from './BuilderLayout.vue'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
 import * as _ from 'lodash-es'
 import MenuSettings from '@components/slots/MenuSettings'
 
@@ -263,6 +263,8 @@ export default {
 
   beforeDestroy () {
     this.$builder.clear()
+    this.clearStateStack()
+    document.removeEventListener('keyup', this.keyUp)
   },
   methods: {
     ...mapActions('Sidebar', [
@@ -284,6 +286,7 @@ export default {
     ...mapActions('User', [
       'getUser'
     ]),
+    ...mapMutations('Landing', ['clearStateStack']),
 
     parsing (textCss) {
       let self = this

@@ -48,6 +48,10 @@ export default {
 
     undoFlag (state, value) {
       state.undoFlag = value
+    },
+
+    clearStateStack (state) {
+      state.savedStates = []
     }
   },
 
