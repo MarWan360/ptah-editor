@@ -293,10 +293,6 @@ export default {
       'getUser'
     ]),
 
-    handleUndo () {
-      console.log(111)
-    },
-
     parsing (textCss) {
       let self = this
 
