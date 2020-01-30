@@ -1,3 +1,5 @@
+import { throttle, last } from 'lodash-es'
+
 const STACK_SIZE = 7
 
 export default {
@@ -7,7 +9,8 @@ export default {
     groups: [], // landings sections groups
     savedStates: [], // stack of saved states,
     textEditorActive: false,
-    currentStateNumber: []
+    currentStateNumber: [],
+    undoFlag: false
   },
 
   mutations: {
@@ -41,6 +44,10 @@ export default {
 
     currentStateNumber (state, value) {
       state.currentStateNumber = value
+    },
+
+    undoFlag (state, value) {
+      state.undoFlag = value
     }
   },
 
@@ -57,19 +64,28 @@ export default {
       commit('updateGroups', groups)
     },
 
-    saveState ({ commit, dispatch, state }, landing) {
-      if (localStorage.getItem('guest') === null) {
-        commit('saveState', landing)
-        commit('currentStateNumber', state.savedStates.length)
-        dispatch('saveLanding', landing, { root: true })
+    saveState: throttle(({ dispatch, state, commit }, landing) => {
+      if (state.undoFlag) {
+        commit('undoFlag', false)
+        return
       }
+
+      if (last(state.savedStates) !== landing && localStorage.getItem('guest') === null) {
+        dispatch('saveStateHandler', landing)
+      }
+    }, 3000),
+
+    saveStateHandler ({ commit, dispatch, state }, landing) {
+      commit('saveState', landing)
+      commit('currentStateNumber', state.savedStates.length)
+      dispatch('saveLanding', landing, { root: true })
     },
 
     setState ({ state, commit }, number) {
-      console.log(number, JSON.parse(state.savedStates[number]))
       if (state.savedStates[number]) {
         commit('currentStateNumber', number)
         commit('updateCurrentLanding', JSON.parse(state.savedStates[number]), { root: true })
+        commit('undoFlag', true)
       } else {
         console.warn('Cannot load the specified state.', ` -- state: ${number}`)
       }

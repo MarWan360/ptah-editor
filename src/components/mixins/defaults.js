@@ -21,13 +21,12 @@ export default {
 
   watch: {
     '$sectionData': {
-      handler (value, oldValue) {
-        console.log(value, oldValue, JSON.stringify(value) === JSON.stringify(oldValue))
-        // let newState = this.$builder.export('JSON')
-        // this.saveState(newState)
-      }
-    },
-    deep: true
+      handler () {
+        let newState = this.$builder.export('JSON')
+        this.saveState(newState)
+      },
+      deep: true
+    }
   },
 
   methods: {
