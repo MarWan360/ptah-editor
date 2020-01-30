@@ -4,7 +4,8 @@
     :builder="builder"
     @export="submit"
     @preview="preview"
-    @save="save">
+    @save="save"
+>
 
   <div>
     <div
@@ -31,7 +32,11 @@
           v-if="headerSection.data.mainStyle.overlay"
           :id="`bg-overlay-${ headerSection.id }`"
           slot="overlay"
-          :style="{ 'background-color' : headerSection.data.mainStyle.overlay.color, 'opacity' : headerSection.data.mainStyle.overlay.opacity }"
+          :style="{
+              'background-color' : headerSection.data.mainStyle.overlay.color,
+              'opacity' : headerSection.data.mainStyle.overlay.opacity
+          }"
+          :class="[ isActiveSection(headerSection.id) ? '_section-active' : '' ]"
         >
         </div>
 
@@ -42,7 +47,11 @@
         :key="section.id"
         :is="section.name"
         :id="section.id"
-        :class="[{ 'video-background': section.data.mainStyle.backgroundType === 'video' }, $builder.isEditing ? device: '']"
+        :class="[
+          { 'video-background': section.data.mainStyle.backgroundType === 'video' },
+          $builder.isEditing ? device: '',
+          isActiveSection(section.id) ? '_section-active' : ''
+        ]"
         @click.native="selectSidebarSection(section)">
 
         <menu-settings slot="menu" :section="section"/>
@@ -68,20 +77,8 @@
 
       </component>
 
-      <div class="builder-last"></div>
-
-      <div v-show="emptySections" class="controller-intro">
+      <div v-if="emptySections" class="controller-intro">
         <h3>&larr; Choose layout from the menu</h3>
-      </div>
-
-      <div v-show="showIntro && !builder.sections.length" class="controller-intro">
-        <label for="projectName">Hello, start your project</label>
-        <input class="controller-input" id="projectName" placeholder="project name" v-model="title"/>
-        <template v-if="themes">
-          <div class="controller-themes">
-            <button class="controller-theme" v-for="(theme, index) in themes" :key="index" @click="addTheme(theme)">{{ theme.name }}</button>
-          </div>
-        </template>
       </div>
 
       <v-style>
@@ -89,6 +86,19 @@
       </v-style>
 
     </div>
+
+    <!-- confirm delete element windows -->
+    <base-confirm
+      class="b-modal-delete-element"
+      :class="{'is-expanded': isExpanded }"
+      title="Delete element"
+      @confirm="removeElement(selectedElement.name)"
+      @close="closeDeleteElement"
+      v-if="showConfirmElementDelete"
+      button="Delete"
+    >
+      You are going to delete <b class="b-modal-delete-element__name">{{ settingObjectLabel }}</b>, this cannot be undone. Confirm deleting?
+    </base-confirm>
   </div>
 </builder-layout>
 </template>
@@ -135,7 +145,9 @@ export default {
         array: [],
         prop: '.artboard',
         content: ''
-      }
+      },
+      showConfirmElementDelete: false,
+      selectedElement: null
     }
   },
 
@@ -143,7 +155,11 @@ export default {
     ...mapState(['currentLanding']),
     ...mapState('Sidebar', [
       'isExpanded',
-      'device'
+      'device',
+      'settingObjectSection',
+      'settingObjectOptions',
+      'settingObjectLabel',
+      'isShowModal'
     ]),
     ...mapState('Landing', ['currentStateNumber']),
 
@@ -188,6 +204,10 @@ export default {
         this.parsing(value)
       },
       deep: true
+    },
+
+    showConfirmElementDelete (value) {
+      this.toggleModal(value)
     }
   },
 
@@ -211,6 +231,9 @@ export default {
     if (localStorage.getItem('guest') === null) {
       this.getUser()
     }
+
+    // listener keyUp press
+    document.addEventListener('keyup', this.keyUp)
   },
 
   mounted () {
@@ -258,7 +281,9 @@ export default {
       'toggleSidebar',
       'setControlPanel',
       'toggleSidebar',
-      'toggleAddSectionMenu'
+      'toggleAddSectionMenu',
+      'clearSettingObjectLight',
+      'toggleModal'
     ]),
     ...mapActions('Landing', [
       'saveState',
@@ -537,6 +562,56 @@ export default {
         node.classList.remove('ptah-g-main')
         node.classList.remove('ptah-g-child')
       })
+    },
+
+    isActiveSection (id) {
+      return this.settingObjectSection.id === id
+    },
+
+    keyUp (event) {
+      if (event.key === 'Delete' && this.settingObjectOptions && this.settingObjectOptions.name) {
+        if (this.settingObjectOptions.removable && this.settingObjectOptions.name.indexOf('.element') !== -1) {
+          this.selectedElement = this.settingObjectOptions
+          this.deleteElement(this.selectedElement.name)
+        } else {
+          this.selectedElement = null
+        }
+      }
+    },
+
+    deleteElement (name) {
+      if (this.selectedElement !== null) {
+        this.showConfirmElementDelete = true
+      }
+    },
+
+    /**
+     * Get path
+    */
+    path (name) {
+      let path = _.split(name, '.')[1]
+      return _.toPath(path)
+    },
+
+    /**
+     * Remove element
+     * @param index
+     */
+    removeElement (name) {
+      let p = this.path(name)
+      this.settingObjectSection.data[p[0]].splice(p[1], 1)
+      this.settingObjectSection.schema[p[0]].splice(p[1], 1)
+      this.selectedElement = null
+      this.clearSettingObjectLight()
+
+      const styler = document.querySelector(`.b-styler[path="${name}-${this.settingObjectSection.id}"]`)
+
+      if (styler) styler.remove()
+    },
+
+    closeDeleteElement () {
+      this.showConfirmElementDelete = false
+      this.selectedElement = null
     }
   }
 }
@@ -551,6 +626,9 @@ export default {
   margin: 0 auto
   transition: 0.2s
   position: relative
+
+  display: flex
+  flex-direction: column
   &.is-editable div.is-editable,
   &.is-editable a.is-editable,
   &.is-editable table.is-editable
@@ -695,31 +773,9 @@ export default {
     padding: 1rem 0.5rem
     background: lighten(#18d88b, 40%)
 
-/* video background styles */
-.video-background
-  position: relative !important
-  background: none !important
-  overflow: hidden !important
-  video
-    position: absolute
-    top: 0
-    left: 0
-    min-width: 100%
-    min-height: 100%
-    + .b-footer
-      background: none !important
-
-/* overlay background */
-
-.b-overlay
-  position: absolute
-  top: 0
-  left: 0
-  right: 0
-  bottom: 0
-
-// --- dirty hack. normalize artboard size
-.builder-last
-  height: 1px
-  margin-top: -1px
+.b-modal-delete-element
+  &.is-expanded
+    margin-left: $size-step * 9
+  &__name
+    text-transform: capitalize
 </style>
