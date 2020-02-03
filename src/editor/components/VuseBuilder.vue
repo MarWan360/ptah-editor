@@ -572,7 +572,14 @@ export default {
       if (event.code === 'KeyZ' && event.ctrlKey) {
         let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
         this.setState(stateNumber)
-        this.$builder.set(this.currentLanding)
+        this.$builder.clear()
+        this.$nextTick(() => {
+          this.$builder.set(this.currentLanding)
+          this.$message.success('Undo changes', {
+            duration: 700,
+            dismissible: false
+          })
+        })
       }
     },
 
