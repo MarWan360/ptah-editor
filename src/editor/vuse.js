@@ -289,9 +289,6 @@ class Vuse {
     let script = this.getJsScript()
     let bodyStyles = this.getBodyStyles()
     let scrollSetup = this.getScrollSetup()
-    let fontsNameStr = getFontsNameStr(this.settings.fonts)
-    let fontsLanguages = getFontsLanguages(this.settings.fonts)
-    let fontsSetup = getFontsSetup(this.settings.setupFonts)
 
     printDocument.open()
     printDocument.write(
@@ -302,7 +299,7 @@ class Vuse {
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <link rel="stylesheet" href="${window.location.origin}/ptah_sections.css">
-            <link href="https://fonts.googleapis.com/css?family=${fontsNameStr}&display=swap&subset=${fontsLanguages}" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css?family=Lato|Heebo|PT+Serif|Montserrat:400,500|Roboto:400,700|Cinzel:400,700|IBM+Plex+Sans:400,600|IBM+Plex+Mono:400,600&amp;subset=cyrillic" rel="stylesheet">
             ${scrollSetup.style}
             <style>
               ${customCss}
@@ -310,7 +307,7 @@ class Vuse {
           </head>
           <body class="b-body_preview" style="${bodyStyles}">
             ${(video) ? this.getVideoBg(video) : ''}
-            <div id="main" class="main" style="${fontsSetup}">
+            <div id="main" class="main">
               ${artboard.innerHTML}
             </div>
             ${this.getCookiesPreview()}
