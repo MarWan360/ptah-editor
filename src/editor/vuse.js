@@ -4,10 +4,7 @@ import VuseBuilder from './components/VuseBuilder.vue'
 import VuseRenderer from './components/VuseRenderer.vue'
 import styler from './styler'
 import mixin from './mixin'
-import {
-  cleanDOM,
-  randomSectionId
-} from './util'
+import { cleanDOM } from './util'
 import * as _ from 'lodash-es'
 
 let PLUGINS = []
