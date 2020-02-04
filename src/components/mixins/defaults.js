@@ -47,7 +47,7 @@ export default {
 
     selectElement (newIndex) {
       let idSection = this.id
-      let section = document.getElementById(idSection)
+      let section = document.getElementById(`section_${idSection}`)
       let el = section.querySelector(`[path="${this.arrayName}[${newIndex}].element"]`)
       let resize = el.querySelector(`.resizable.vdr`)
 
