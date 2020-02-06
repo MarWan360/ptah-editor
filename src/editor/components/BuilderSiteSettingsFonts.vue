@@ -1,5 +1,10 @@
 <template>
   <builder-modal-content-layout id="settings-fonts" :noScroll="true">
+    <v-style>
+      <template>
+        {{ `@import url("https://fonts.googleapis.com/css?family=${fontsNameStr}&display=swap")` }}
+      </template>
+    </v-style>
     <form id="fonts-form" @submit.prevent="saveFonts">
       <base-fieldset class="b-setup-fonts" v-if="!isChange">
         <div class="b-setup-fonts-header">
@@ -63,16 +68,16 @@
         </div>
 
         <div class="b-fonts-block" v-if="fontsLoaded">
-          <div class="b-fonts-block__list">
+          <div class="b-fonts-block__list" ref="blockFonts">
             <base-scroll-container
               class="b-scrolled-content"
               backgroundBar="#999"
+              v-if="isLoaded"
+              @wheel="setСoordinates"
             >
-              <div class="b-scrolled-content__inner">
-                <ul class="b-fonts-list">
-                  <li class="b-fonts-list__item"
+                <ul class="b-fonts-list" ref="blockFontsList">
+                  <li class="b-fonts-list__item _selected"
                       :class="[
-                        { '_selected' : containsFont(font.family) },
                         { '_applied' : selectedEl === font.family }
                       ]"
                       v-for="font in filteredFonts"
@@ -90,11 +95,7 @@
                         {{ font.category  }}
                       </span>
                     </div>
-                    <div v-if="containsFont(font.family)" :style="{
-                      'font-family': font.family,
-                      'font-size': '23px',
-                      'font-weight': '400',
-                    }">
+                    <div :data-font="`${font.family}`" class="b-simple-text">
                       {{ defText }}
                     </div>
                     <div class="b-fonts-list__item-button">
@@ -116,7 +117,6 @@
                     </div>
                   </li>
                 </ul>
-              </div>
             </base-scroll-container>
           </div>
           <div class="b-font-edit"
@@ -199,6 +199,13 @@ import axios from 'axios'
 import BuilderModalContentLayout from './BuilderModalContentLayout'
 import { mapState, mapActions } from 'vuex'
 
+import Vue from 'vue'
+Vue.component('v-style', {
+  render: function (createElement) {
+    return createElement('style', this.$slots.default)
+  }
+})
+
 export default {
   name: 'BuilderSiteSettingsFonts',
 
@@ -226,7 +233,12 @@ export default {
       },
       isChange: false,
       selectedEl: null,
-      selectedKey: null
+      selectedKey: null,
+      isLoaded: false,
+      topEl: null,
+      bottomEl: null,
+      topList: null,
+      visibleFonts: []
     }
   },
 
@@ -267,6 +279,16 @@ export default {
     status () {
       const length = Object.keys(this.selectFonts).length - 1
       return this.statusList[length] || this.statusList[0]
+    },
+
+    fontsNameStr () {
+      let str = ''
+
+      this.visibleFonts.forEach(name => {
+        str += `${name}:400,600|`
+      })
+
+      return str
     }
   },
 
@@ -274,12 +296,15 @@ export default {
     ...mapActions(['storeSettings', 'storeSaveSettingsFonts', 'storeSaveSettingsSetupFonts']),
 
     getFontsData () {
+      this.isLoaded = false
       axios('https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyDKi8oKqvLuCASo7XZg4wY_D3CMib_Sg9U&sort=popularity')
         .then(response => {
           this.list = response.data.items
+          this.isLoaded = true
         })
         .catch(err => {
           this.list = this.fonts
+          this.isLoaded = true
           console.warn(err)
         })
     },
@@ -379,11 +404,54 @@ export default {
       this.storeFonts()
     },
 
+    setСoordinates () {
+      if (!this.isChange) {
+        return
+      }
+
+      const el = this.$refs.blockFonts
+      const list = this.$refs.blockFontsList
+
+      const heightEl = el.getBoundingClientRect().bottom
+      const topList = list.getBoundingClientRect().top
+
+      const elements = [...list.getElementsByTagName('li')].splice(0, 50)
+      this.visibleFonts = []
+
+      elements.forEach(el => {
+        const simpleText = el.getElementsByClassName('b-simple-text')[0]
+        const font = simpleText.dataset.font
+
+        if ((el.offsetTop + topList) < heightEl) {
+          this.visibleFonts.push(font)
+          simpleText.style.fontFamily = font
+        }
+
+        if ((el.offsetTop + topList) < 0) {
+          this.visibleFonts = this.visibleFonts.filter(f => f !== font)
+        }
+
+        el.setAttribute('data-top', el.offsetTop + topList)
+      })
+    },
+
     changeFont (el, key) {
       this.selectedEl = el
       this.selectedKey = key
       this.isChange = !this.isChange
+
+      this.$nextTick(() => {
+        this.setСoordinates()
+      })
     }
+  },
+
+  created () {
+    window.addEventListener('wheel', this.setСoordinates)
+  },
+
+  destroyed () {
+    window.removeEventListener('wheel', this.setСoordinates)
   },
 
   mounted () {
@@ -432,7 +500,7 @@ export default {
   &__item
     $this: &
     width: 100%
-    height: $size-step * 1.5
+    height: $size-step * 2.5
     padding: $size-step/2 $size-step/2 $size-step/2 $size-step
     margin: 0
 
@@ -465,7 +533,7 @@ export default {
       display: none
       position: absolute
       top: 5px
-      right: 20px
+      right: 32px
       &-apply
         width: auto
     &:hover
@@ -582,4 +650,8 @@ export default {
       &:hover
         #{$this}-buttons
           display: block
+.b-simple-text
+  width: 100%
+  font-size: 44px
+  display: block
 </style>
