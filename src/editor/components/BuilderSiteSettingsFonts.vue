@@ -1,7 +1,7 @@
 <template>
   <builder-modal-content-layout id="settings-fonts" :noScroll="true">
     <v-style>
-      <template>
+      <template v-if="fontsNameStr !== ''">
         {{ `@import url("https://fonts.googleapis.com/css?family=${fontsNameStr}&display=swap")` }}
       </template>
     </v-style>
@@ -54,12 +54,6 @@
             />
           </div>
           <div class="b-font-filter__sw">
-            <BaseSwitcher
-              v-model="isFilterSelected"
-              :label="`Show only added  `"
-            />
-          </div>
-          <div class="b-font-filter__sw">
             <base-text-field
               class="b-font-filter__text"
               v-model="defText"
@@ -68,12 +62,15 @@
         </div>
 
         <div class="b-fonts-block" v-if="fontsLoaded">
-          <div class="b-fonts-block__list" ref="blockFonts">
+          <div class="b-fonts-block__list"
+            ref="blockFonts"
+            :class="{ '_m': editFont !== null }"
+          >
             <base-scroll-container
               class="b-scrolled-content"
               backgroundBar="#999"
               v-if="isLoaded"
-              @wheel="setСoordinates"
+              ref="blockFontsList1"
             >
                 <ul class="b-fonts-list" ref="blockFontsList">
                   <li class="b-fonts-list__item _selected"
@@ -169,13 +166,6 @@
         <div class="b-fonts-block__controls">
           <base-button
             size="small"
-            v-text="$t('nav.cancel')"
-            :transparent="true"
-            @click="isChange = false"
-            color="gray"
-          />
-          <base-button
-            size="small"
             v-text="$t('nav.save')"
             :transparent="true"
             @click="isChange = false"
@@ -198,6 +188,7 @@
 import axios from 'axios'
 import BuilderModalContentLayout from './BuilderModalContentLayout'
 import { mapState, mapActions } from 'vuex'
+import { throttle, isUndefined } from 'lodash-es'
 
 import Vue from 'vue'
 Vue.component('v-style', {
@@ -216,11 +207,11 @@ export default {
       list: [],
       search: '', // filter fonts
       editFont: null,
-      isFilterSelected: false,
       defText: this.$i18n.t('font.defText'),
       statusList: [
         { text: 'fast', color: 'green' },
         { text: 'medium', color: 'orange' },
+        { text: 'slow', color: 'red' },
         { text: 'slow', color: 'red' },
         { text: 'slow', color: 'red' }
       ],
@@ -256,11 +247,12 @@ export default {
     filteredFonts () {
       let defFonts = this.list
 
-      if (this.isFilterSelected) {
-        defFonts = defFonts.filter((font) => {
-          return this.selectFonts[this.checkSpace(font.family)]
-        })
-      }
+      defFonts.forEach((font, index) => {
+        if (this.selectFonts[this.checkSpace(font.family)]) {
+          defFonts.unshift(...defFonts.splice(index, 1))
+        }
+      })
+
       return defFonts.filter((font) => ~font.family.toLowerCase().indexOf(this.search.toLowerCase()))
     },
 
@@ -292,6 +284,14 @@ export default {
     }
   },
 
+  watch: {
+    isChange (value) {
+      value
+        ? window.addEventListener('wheel', throttle(this.setCoordinates, 500))
+        : window.removeEventListener('wheel', throttle(this.setCoordinates, 500))
+    }
+  },
+
   methods: {
     ...mapActions(['storeSettings', 'storeSaveSettingsFonts', 'storeSaveSettingsSetupFonts']),
 
@@ -313,6 +313,8 @@ export default {
       this.storeSettings({
         fonts: this.selectFonts
       })
+
+      this.isLoaded = false
 
       this.close()
     },
@@ -347,6 +349,8 @@ export default {
       this.removeFont(this.selectedEl)
 
       this.selectedEl = font.family
+      this.editFont = null
+      this.isChange = false
     },
 
     checkSpace (family) {
@@ -404,18 +408,18 @@ export default {
       this.storeFonts()
     },
 
-    setСoordinates () {
+    setCoordinates () {
+      const el = this.$refs.blockFonts
+      const list = this.$refs.blockFontsList
+
       if (!this.isChange) {
         return
       }
 
-      const el = this.$refs.blockFonts
-      const list = this.$refs.blockFontsList
-
-      const heightEl = el.getBoundingClientRect().bottom
+      const heightEl = !isUndefined(el.getBoundingClientRect()) ? el.getBoundingClientRect().bottom : 0
       const topList = list.getBoundingClientRect().top
 
-      const elements = [...list.getElementsByTagName('li')].splice(0, 50)
+      const elements = [...list.getElementsByTagName('li')]
       this.visibleFonts = []
 
       elements.forEach(el => {
@@ -430,8 +434,6 @@ export default {
         if ((el.offsetTop + topList) < 0) {
           this.visibleFonts = this.visibleFonts.filter(f => f !== font)
         }
-
-        el.setAttribute('data-top', el.offsetTop + topList)
       })
     },
 
@@ -441,20 +443,12 @@ export default {
       this.isChange = !this.isChange
 
       this.$nextTick(() => {
-        this.setСoordinates()
+        this.setCoordinates()
       })
     }
   },
 
   created () {
-    window.addEventListener('wheel', this.setСoordinates)
-  },
-
-  destroyed () {
-    window.removeEventListener('wheel', this.setСoordinates)
-  },
-
-  mounted () {
     this.getFontsData()
   }
 }
@@ -475,6 +469,8 @@ export default {
   border: 1px solid #C4C4C4
   &__list
     width: 100%
+    &._m
+      width: 70%
   &__controls
     display: flex
     justify-content: flex-end
@@ -651,7 +647,10 @@ export default {
         #{$this}-buttons
           display: block
 .b-simple-text
-  width: 100%
+  width: 95%
   font-size: 44px
   display: block
+  overflow: hidden
+  white-space: nowrap
+  text-overflow: ellipsis
 </style>
