@@ -1,8 +1,8 @@
 <template>
   <builder-modal-content-layout id="settings-fonts" :noScroll="true">
     <v-style>
-      <template v-if="fontsNameStr !== ''">
-        {{ `@import url("https://fonts.googleapis.com/css?family=${fontsNameStr}&display=swap")` }}
+      <template v-for="font in visibleFonts">
+        {{ `@import url("https://fonts.googleapis.com/css?family=${font}:400&display=swap");` }}
       </template>
     </v-style>
     <form id="fonts-form" @submit.prevent="saveFonts">
@@ -271,24 +271,15 @@ export default {
     status () {
       const length = Object.keys(this.selectFonts).length - 1
       return this.statusList[length] || this.statusList[0]
-    },
-
-    fontsNameStr () {
-      let str = ''
-
-      this.visibleFonts.forEach(name => {
-        str += `${name}:400,600|`
-      })
-
-      return str
     }
   },
 
   watch: {
     isChange (value) {
+      const delay = 500
       value
-        ? window.addEventListener('wheel', throttle(this.setCoordinates, 500))
-        : window.removeEventListener('wheel', throttle(this.setCoordinates, 500))
+        ? window.addEventListener('wheel', throttle(this.setCoordinates, delay))
+        : window.removeEventListener('wheel', throttle(this.setCoordinates, delay))
     }
   },
 
@@ -411,6 +402,7 @@ export default {
     setCoordinates () {
       const el = this.$refs.blockFonts
       const list = this.$refs.blockFontsList
+      let elements = []
 
       if (!this.isChange) {
         return
@@ -419,20 +411,24 @@ export default {
       const heightEl = !isUndefined(el.getBoundingClientRect()) ? el.getBoundingClientRect().bottom : 0
       const topList = list.getBoundingClientRect().top
 
-      const elements = [...list.getElementsByTagName('li')]
-      this.visibleFonts = []
+      elements = [...list.getElementsByTagName('li')]
+
+      if (this.visibleFonts.length > 0) {
+        elements.splice(0, this.visibleFonts.length)
+      }
 
       elements.forEach(el => {
         const simpleText = el.getElementsByClassName('b-simple-text')[0]
         const font = simpleText.dataset.font
 
-        if ((el.offsetTop + topList) < heightEl) {
-          this.visibleFonts.push(font)
-          simpleText.style.fontFamily = font
-        }
+        if ((el.offsetTop + topList) < heightEl * 2) {
+          const isFind = this.visibleFonts.find(f => f === font)
 
-        if ((el.offsetTop + topList) < 0) {
-          this.visibleFonts = this.visibleFonts.filter(f => f !== font)
+          if (isFind === undefined) {
+            this.visibleFonts.push(this.checkSpace(font))
+          }
+
+          simpleText.style.fontFamily = font
         }
       })
     },
@@ -496,7 +492,7 @@ export default {
   &__item
     $this: &
     width: 100%
-    height: $size-step * 2.5
+    height: $size-step * 3
     padding: $size-step/2 $size-step/2 $size-step/2 $size-step
     margin: 0
 
