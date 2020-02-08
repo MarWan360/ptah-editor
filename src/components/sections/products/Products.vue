@@ -44,8 +44,9 @@ const [
     },
     {
       element: {
-        text: `<h1><strong>${label[i]} edition</strong></h1>`,
+        text: `<p><strong>${label[i]} edition</strong></p>`,
         styles: {
+          'font-family': 'Montserrat',
           'font-size': '2.8rem',
           'color': '#ffffff'
         },
@@ -58,10 +59,11 @@ const [
     },
     {
       element: {
-        text: '><strong>BUY NOW</strong>',
+        text: '<p><strong>BUY NOW</strong></p>',
         styles: {
           'background-color': 'transparent',
           'color': '#F4BC64',
+          'font-family': 'Montserrat',
           'font-size:': '1.6rem',
           'text-align': 'center',
           'width': '190px',
