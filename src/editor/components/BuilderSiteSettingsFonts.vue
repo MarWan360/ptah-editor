@@ -2,7 +2,7 @@
   <builder-modal-content-layout id="settings-fonts" :noScroll="true">
     <v-style>
       <template v-for="font in visibleFonts">
-        {{ `@import url("https://fonts.googleapis.com/css?family=${font}:400&display=swap");` }}
+        {{ `@import url("https://fonts.googleapis.com/css?family=${font.family}:${font.variant}");` }}
       </template>
     </v-style>
     <form id="fonts-form" @submit.prevent="saveFonts">
@@ -70,15 +70,14 @@
               class="b-scrolled-content"
               backgroundBar="#999"
               v-if="isLoaded"
-              ref="blockFontsList1"
             >
-                <ul class="b-fonts-list" ref="blockFontsList">
+                <ul class="b-fonts-list">
                   <li class="b-fonts-list__item _selected"
                       :class="[
                         { '_applied' : selectedEl === font.family }
                       ]"
-                      v-for="font in filteredFonts"
-                      :key="font.family"
+                      v-for="(font, index) in visibleFonts"
+                      :key="index"
                   >
                     <span
                       class="b-fonts-list__item-check"
@@ -92,7 +91,9 @@
                         {{ font.category  }}
                       </span>
                     </div>
-                    <div :data-font="`${font.family}`" class="b-simple-text">
+                    <div class="b-simple-text" :style="{
+                        'font-family': font.family
+                      }">
                       {{ defText }}
                     </div>
                     <div class="b-fonts-list__item-button">
@@ -188,7 +189,7 @@
 import axios from 'axios'
 import BuilderModalContentLayout from './BuilderModalContentLayout'
 import { mapState, mapActions } from 'vuex'
-import { throttle, isUndefined } from 'lodash-es'
+import { throttle } from 'lodash-es'
 
 import Vue from 'vue'
 Vue.component('v-style', {
@@ -229,7 +230,8 @@ export default {
       topEl: null,
       bottomEl: null,
       topList: null,
-      visibleFonts: []
+      visibleFonts: [],
+      isLoadingFonts: false
     }
   },
 
@@ -276,7 +278,7 @@ export default {
 
   watch: {
     isChange (value) {
-      const delay = 500
+      const delay = 250
       value
         ? window.addEventListener('wheel', throttle(this.setCoordinates, delay))
         : window.removeEventListener('wheel', throttle(this.setCoordinates, delay))
@@ -328,11 +330,12 @@ export default {
 
     applyFont (font) {
       const name = this.checkSpace(font.family)
+      const variant = font.variant
 
       this.editFont = font
       this.selectFonts[name] = {
-        variants: ['regular'],
-        subsets: ['latin', 'cyrillic']
+        variants: [variant],
+        subsets: ['latin']
       }
       this.storeFonts()
 
@@ -354,6 +357,10 @@ export default {
 
     containsFont (family) {
       return this.selectFonts[this.checkSpace(family)] !== undefined
+    },
+
+    loadedFont (font) {
+      return this.visibleFonts.find(f => f.family === font)
     },
 
     containsFontSubset (subset) {
@@ -399,38 +406,29 @@ export default {
       this.storeFonts()
     },
 
-    setCoordinates () {
-      const el = this.$refs.blockFonts
-      const list = this.$refs.blockFontsList
+    setCoordinates (e) {
       let elements = []
+      const length = this.visibleFonts.length ? this.visibleFonts.length : 0
 
-      if (!this.isChange) {
+      if (!this.isChange || this.isLoadingFonts || (e && e.deltaY < 0)) {
         return
       }
 
-      const heightEl = !isUndefined(el.getBoundingClientRect()) ? el.getBoundingClientRect().bottom : 0
-      const topList = list.getBoundingClientRect().top
+      this.isLoadingFonts = true
 
-      elements = [...list.getElementsByTagName('li')]
-
-      if (this.visibleFonts.length > 0) {
-        elements.splice(0, this.visibleFonts.length)
-      }
+      elements = [...this.filteredFonts].slice(length, length + 6)
 
       elements.forEach(el => {
-        const simpleText = el.getElementsByClassName('b-simple-text')[0]
-        const font = simpleText.dataset.font
-
-        if ((el.offsetTop + topList) < heightEl * 2) {
-          const isFind = this.visibleFonts.find(f => f === font)
-
-          if (isFind === undefined) {
-            this.visibleFonts.push(this.checkSpace(font))
-          }
-
-          simpleText.style.fontFamily = font
-        }
+        this.visibleFonts.push({
+          family: this.checkSpace(el.family),
+          variant: el.variants[0],
+          category: el.category
+        })
       })
+
+      setTimeout(() => {
+        this.isLoadingFonts = false
+      }, 600)
     },
 
     changeFont (el, key) {
@@ -649,4 +647,5 @@ export default {
   overflow: hidden
   white-space: nowrap
   text-overflow: ellipsis
+  transition: all 0.6s
 </style>
