@@ -231,6 +231,8 @@ export default {
       bottomEl: null,
       topList: null,
       visibleFonts: [],
+      filteredFonts: [],
+      tempFonts: [],
       isLoadingFonts: false
     }
   },
@@ -244,18 +246,6 @@ export default {
 
     fontsLoaded () {
       return true
-    },
-
-    filteredFonts () {
-      let defFonts = this.list
-
-      defFonts.forEach((font, index) => {
-        if (this.selectFonts[this.checkSpace(font.family)]) {
-          defFonts.unshift(...defFonts.splice(index, 1))
-        }
-      })
-
-      return defFonts.filter((font) => ~font.family.toLowerCase().indexOf(this.search.toLowerCase()))
     },
 
     selectFonts () {
@@ -279,9 +269,15 @@ export default {
   watch: {
     isChange (value) {
       const delay = 250
+      this.filterFonts()
       value
-        ? window.addEventListener('wheel', throttle(this.setCoordinates, delay))
-        : window.removeEventListener('wheel', throttle(this.setCoordinates, delay))
+        ? window.addEventListener('wheel', throttle(this.renderFonts, delay))
+        : window.removeEventListener('wheel', throttle(this.renderFonts, delay))
+      this.search = ''
+    },
+
+    search () {
+      this.searchFonts()
     }
   },
 
@@ -300,6 +296,35 @@ export default {
           this.isLoaded = true
           console.warn(err)
         })
+    },
+
+    filterFonts () {
+      let defFonts = this.list
+
+      defFonts.forEach((font, index) => {
+        if (this.selectFonts[this.checkSpace(font.family)]) {
+          defFonts.unshift(...defFonts.splice(index, 1))
+        }
+      })
+
+      this.filteredFonts = defFonts.filter((font) => ~font.family.toLowerCase().indexOf(this.search.toLowerCase()))
+      this.filterVisibledFonts()
+    },
+
+    searchFonts () {
+      this.visibleFonts = this.tempFonts.filter((font) => ~font.family.toLowerCase().indexOf(this.search.toLowerCase()))
+    },
+
+    filterVisibledFonts () {
+      let defFonts = this.visibleFonts
+
+      defFonts.forEach((font, index) => {
+        if (this.selectFonts[this.checkSpace(font.family)]) {
+          defFonts.unshift(...defFonts.splice(index, 1))
+        }
+      })
+
+      this.visibleFonts = defFonts
     },
 
     saveFonts () {
@@ -338,8 +363,8 @@ export default {
         subsets: ['latin']
       }
       this.storeFonts()
-
       this.storeSetupFonts(font)
+
       this.removeFont(this.selectedEl)
 
       this.selectedEl = font.family
@@ -360,7 +385,7 @@ export default {
     },
 
     loadedFont (font) {
-      return this.visibleFonts.find(f => f.family === font)
+      return this.visibleFonts.find(f => f.family === this.checkSpace(font))
     },
 
     containsFontSubset (subset) {
@@ -406,7 +431,7 @@ export default {
       this.storeFonts()
     },
 
-    setCoordinates (e) {
+    renderFonts (e) {
       let elements = []
       const length = this.visibleFonts.length ? this.visibleFonts.length : 0
 
@@ -416,14 +441,21 @@ export default {
 
       this.isLoadingFonts = true
 
-      elements = [...this.filteredFonts].slice(length, length + 6)
+      elements = this.filteredFonts.slice(length, length + 6)
 
       elements.forEach(el => {
+        if (this.loadedFont(el.family) !== undefined) {
+          return
+        }
+
         this.visibleFonts.push({
-          family: this.checkSpace(el.family),
+          family: el.family,
           variant: el.variants[0],
-          category: el.category
+          category: el.category,
+          subsets: el.subsets
         })
+
+        this.tempFonts = this.visibleFonts
       })
 
       setTimeout(() => {
@@ -437,7 +469,7 @@ export default {
       this.isChange = !this.isChange
 
       this.$nextTick(() => {
-        this.setCoordinates()
+        this.renderFonts()
       })
     }
   },
