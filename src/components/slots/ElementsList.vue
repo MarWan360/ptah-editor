@@ -99,6 +99,12 @@ export default {
           descr: this.$t('el.timerDescr'),
           ico: 'elTimer',
           width: 16
+        },
+        iframe: {
+          name: 'Iframe',
+          descr: this.$t('el.videoDescr'),
+          ico: 'frame',
+          width: 18
         }
       }
     }
@@ -180,6 +186,7 @@ export default {
 
     addEl (name) {
       const el = _.merge({}, Seeder.seed(this.elements[name]))
+      console.log(el)
       this.addElement(el)
     },
 
