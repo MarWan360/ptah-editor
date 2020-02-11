@@ -107,7 +107,7 @@
 <script>
 import VuseIcon from './VuseIcon'
 import BuilderLayout from './BuilderLayout.vue'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
 import * as _ from 'lodash-es'
 import MenuSettings from '@components/slots/MenuSettings'
 import { getFontsSetup } from '../util'
@@ -164,6 +164,7 @@ export default {
       'isShowModal',
       'controlPanel'
     ]),
+    ...mapState('Landing', ['currentStateNumber']),
 
     builder () {
       return this.$builder
@@ -241,9 +242,6 @@ export default {
     if (localStorage.getItem('guest') === null) {
       this.getUser()
     }
-
-    // listener keyUp press
-    document.addEventListener('keyup', this.keyUp)
   },
 
   mounted () {
@@ -253,6 +251,9 @@ export default {
     this.initSettings()
 
     this.parsing(css)
+
+    // listener keyUp press
+    document.addEventListener('keyup', this.keyUp)
   },
 
   updated () {
@@ -273,6 +274,8 @@ export default {
 
   beforeDestroy () {
     this.$builder.clear()
+    this.clearStateStack()
+    document.removeEventListener('keyup', this.keyUp)
   },
   methods: {
     ...mapActions('Sidebar', [
@@ -288,11 +291,13 @@ export default {
       'toggleModal'
     ]),
     ...mapActions('Landing', [
-      'saveState'
+      'saveState',
+      'setState'
     ]),
     ...mapActions('User', [
       'getUser'
     ]),
+    ...mapMutations('Landing', ['clearStateStack']),
 
     parsing (textCss) {
       let self = this
@@ -574,6 +579,19 @@ export default {
         } else {
           this.selectedElement = null
         }
+      }
+
+      if (event.code === 'KeyZ' && event.ctrlKey) {
+        let stateNumber = this.currentStateNumber > 0 ? this.currentStateNumber - 1 : 0
+        this.setState(stateNumber)
+        this.$builder.clear()
+        this.$nextTick(() => {
+          this.$builder.set(this.currentLanding)
+          this.$message.success('Undo changes', {
+            duration: 700,
+            dismissible: false
+          })
+        })
       }
     },
 
