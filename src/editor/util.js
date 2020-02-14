@@ -495,7 +495,10 @@ export function getParallaxSetup (sections) {
   })
 
   if (parallaxSetup) {
-    return `<script src="https://cdn.jsdelivr.net/parallax.js/1.4.2/parallax.min.js"></script>`
+    return `
+      <script src="${window.location.origin}/js/parallax.min.js"></script>
+      <script>$('._parallax').parallax();</script>
+    `
   }
 
   return ''
@@ -557,7 +560,7 @@ export function getScrollSetup (fullPageScroll) {
  */
 export function getJquerySetup (parallax = '', fullPageScroll ='') {
   if (fullPageScroll === 'yes' || parallax !== '') {
-    return `<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>`
+    return `<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>`
   }
 
   return ``

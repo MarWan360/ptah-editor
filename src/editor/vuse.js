@@ -295,13 +295,11 @@ class Vuse {
     let bodyStyles = this.getBodyStyles()
     let scrollSetup = getScrollSetup(this.settings.fullPageScroll)
 
-    console.log(scrollSetup.setup)
-
     let fontsNameStr = getFontsNameStr(this.settings.fonts)
     let fontsLanguages = getFontsLanguages(this.settings.fonts)
     let fontsSetup = getFontsSetup(this.settings.setupFonts)
+    let getJquery = getJquerySetup(getParallaxSetup(this.sections), this.settings.fullPageScroll)
     let parallaxSetup = getParallaxSetup(this.sections)
-    let getJquery = getJquerySetup(parallaxSetup, this.settings.fullPageScroll)
 
     printDocument.open()
     printDocument.write(
@@ -327,9 +325,6 @@ class Vuse {
             ${getJquery}
             ${scrollSetup.setup}
             ${parallaxSetup}
-            <script>
-              ${script}
-            </script>
             <script src="${window.location.origin + '/js/cjs.js'}"></script>
           <body>
         </html>`

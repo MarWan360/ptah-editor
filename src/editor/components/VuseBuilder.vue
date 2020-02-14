@@ -632,6 +632,9 @@ export default {
     },
 
     getImageFromBgStyles (bg) {
+      if (!bg) {
+        return
+      }
       return bg.replace(/^url[(]/, '').replace(/[)]$/, '')
     }
   }

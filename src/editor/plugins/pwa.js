@@ -131,11 +131,12 @@ function download (assets) {
       let fontsNameStr = getFontsNameStr(this.settings.fonts)
       let fontsLanguages = getFontsLanguages(this.settings.fonts)
       let fontsSetup = getFontsSetup(this.settings.setupFonts)
+      let getJquery = getJquerySetup(getParallaxSetup(this.sections), this.settings.fullPageScroll)
       let parallaxSetup = getParallaxSetup(this.sections)
-      let getJquery = getJquerySetup(parallaxSetup, this.settings.fullPageScroll)
 
       output.file('index.html',
-        `<html>
+        `<!DOCTYPE html>
+          <html>
           <head>
             ${gtm.head}
             ${gtag}
