@@ -186,7 +186,6 @@ export default {
 
     addEl (name) {
       const el = _.merge({}, Seeder.seed(this.elements[name]))
-      console.log(el)
       this.addElement(el)
     },
 
