@@ -161,7 +161,9 @@ export default {
       'settingObjectSection',
       'settingObjectOptions',
       'settingObjectLabel',
-      'isShowModal'
+      'isShowModal',
+      'controlPanel',
+      'sandbox'
     ]),
     ...mapState('Landing', ['currentStateNumber']),
 
@@ -187,6 +189,15 @@ export default {
 
     fontsSetup () {
       return getFontsSetup(this.setupFonts)
+    },
+
+    components: {
+      set (value) {
+        this.settingObjectSection.set(this.sandbox.components, value)
+      },
+      get () {
+        return this.settingObjectSection.get(this.sandbox.components) || []
+      }
     }
   },
 
@@ -570,12 +581,10 @@ export default {
     },
 
     keyUp (event) {
-      if (event.key === 'Delete' && this.settingObjectOptions && this.settingObjectOptions.name) {
+      if (event.key === 'Delete' && this.settingObjectOptions && this.settingObjectOptions.name && !this.controlPanel.expanded) {
         if (this.settingObjectOptions.removable && this.settingObjectOptions.name.indexOf('.element') !== -1) {
           this.selectedElement = this.settingObjectOptions
           this.deleteElement(this.selectedElement.name)
-        } else {
-          this.selectedElement = null
         }
       }
 
@@ -613,13 +622,13 @@ export default {
      */
     removeElement (name) {
       let p = this.path(name)
-      this.settingObjectSection.data[p[0]].splice(p[1], 1)
-      this.settingObjectSection.schema[p[0]].splice(p[1], 1)
-      this.selectedElement = null
-      this.clearSettingObjectLight()
-
       const styler = document.querySelector(`.b-styler[path="${name}-${this.settingObjectSection.id}"]`)
+      const components = [...this.components]
 
+      components.splice(parseInt(p[1]), 1)
+      this.components = components
+
+      // remove deleted element's styler
       if (styler) styler.remove()
     },
 
