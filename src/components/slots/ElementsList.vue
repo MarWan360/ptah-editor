@@ -102,7 +102,7 @@ export default {
         },
         iframe: {
           name: 'Iframe',
-          descr: this.$t('el.videoDescr'),
+          descr: this.$t('el.iframeDescr'),
           ico: 'frame',
           width: 18
         }
