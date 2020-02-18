@@ -13,6 +13,9 @@ function installStyler ({ builder, Vue }) {
       const newNode = document.createElement('div')
       const section = vnode.context.$section
       const rootApp = vnode.context.$root.$el
+      const stylerPath = `${binding.value.path}-${section.id}`
+      const findStyler = document.querySelector(`.b-styler[path="${binding.value.path}-${section.id}"]`)
+      const styler = findStyler || newNode
       let name
       let type = false
 
@@ -36,6 +39,7 @@ function installStyler ({ builder, Vue }) {
       section.stylers.push(new StylerInstance({
         store: vnode.context.$store,
         propsData: {
+          stylerPath,
           el,
           section: section,
           type: (binding.arg !== 'index' && binding.arg !== 'for' && binding.arg) || type || getTypeFromSchema(name, section.schema) || getTypeFromTagName(el.tagName),
@@ -43,13 +47,14 @@ function installStyler ({ builder, Vue }) {
           label: binding.value.label,
           name: name
         }
-      }).$mount(newNode))
+      }).$mount(styler))
     },
 
     update (el, binding, vnode) {
       if (binding.value.el && binding.value.el.behavior) {
         el.dataset.behavior = binding.value.el.behavior || 'auto'
       }
+      console.log('update')
     }
   }
 }

@@ -714,10 +714,10 @@ export default {
      */
     removeElement () {
       let index = this.path[1]
-      this.components.splice(index, 1)
-      this.clearSettingObjectLight()
-      this.hideStyler()
-      this.$destroy()
+      const components = [...this.components]
+
+      components.splice(index, 1)
+      this.components = components
     },
 
     duplicateElement () {

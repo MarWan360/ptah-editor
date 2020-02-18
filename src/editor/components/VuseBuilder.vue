@@ -622,14 +622,10 @@ export default {
      */
     removeElement (name) {
       let p = this.path(name)
-      const styler = document.querySelector(`.b-styler[path="${name}-${this.settingObjectSection.id}"]`)
       const components = [...this.components]
 
       components.splice(parseInt(p[1]), 1)
       this.components = components
-
-      // remove deleted element's styler
-      if (styler) styler.remove()
     },
 
     closeDeleteElement () {
