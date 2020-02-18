@@ -716,6 +716,8 @@ export default {
       let index = this.path[1]
       const components = [...this.components]
 
+      this.hideStyler()
+
       components.splice(index, 1)
       this.components = components
     },

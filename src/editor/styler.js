@@ -54,7 +54,6 @@ function installStyler ({ builder, Vue }) {
       if (binding.value.el && binding.value.el.behavior) {
         el.dataset.behavior = binding.value.el.behavior || 'auto'
       }
-      console.log('update')
     }
   }
 }
