@@ -52,8 +52,11 @@
         :class="[
           { 'video-background': section.data.mainStyle.backgroundType === 'video' },
           $builder.isEditing ? device: '',
-          isActiveSection(section.id) ? '_section-active' : ''
+          isActiveSection(section.id) ? '_section-active' : '',
+          section.data.mainStyle.parallax ? '_parallax' : ''
         ]"
+        :data-parallax="section.data.mainStyle.parallax ? 'scroll' : ''"
+        :data-image-src="getImageFromBgStyles(section.data.mainStyle.styles['background-image'])"
         @click.native="selectSidebarSection(section)">
 
         <menu-settings slot="menu" :section="section"/>
@@ -165,7 +168,8 @@ export default {
       'settingObjectSection',
       'settingObjectOptions',
       'settingObjectLabel',
-      'isShowModal'
+      'isShowModal',
+      'controlPanel'
     ]),
     ...mapState('Landing', ['currentStateNumber']),
 
@@ -576,7 +580,8 @@ export default {
     },
 
     keyUp (event) {
-      if (event.key === 'Delete' && this.settingObjectOptions && this.settingObjectOptions.name) {
+      if (event.key === 'Delete' && this.settingObjectOptions && this.settingObjectOptions.name && !this.controlPanel.expanded) {
+        console.log(this.controlPanel.expanded)
         if (this.settingObjectOptions.removable && this.settingObjectOptions.name.indexOf('.element') !== -1) {
           this.selectedElement = this.settingObjectOptions
           this.deleteElement(this.selectedElement.name)
@@ -639,6 +644,13 @@ export default {
     closeDeleteElement () {
       this.showConfirmElementDelete = false
       this.selectedElement = null
+    },
+
+    getImageFromBgStyles (bg) {
+      if (!bg) {
+        return
+      }
+      return bg.replace(/^url[(]/, '').replace(/[)]$/, '')
     }
   }
 }

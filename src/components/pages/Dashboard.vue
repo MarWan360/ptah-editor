@@ -20,6 +20,7 @@ export default {
             'FirstScreenSpace01',
             'FooterSpace'
           ],
+          url: 'https://s3.protocol.one/files/Simple-page-2020-v1.json',
           image: 'https://s3.protocol.one/images/1_r.jpg',
           description: 'Simple Sci-fi template width video background. Sections: First Screen, Footer'
         },
@@ -54,6 +55,7 @@ export default {
             'FrequentlyAskedQuestions',
             'FooterSpace'
           ],
+          url: 'https://s3.protocol.one/files/Space-page-2020.json?v=2020',
           image: 'https://s3.protocol.one/images/4_r.jpg',
           description: 'Sci-fi styled template with: Menu, First screen, columns, slider, products, system requirments, FAQ and footer'
         },
@@ -398,6 +400,7 @@ export default {
   bottom: 0
   left: 0
   background-color: rgba($dark-blue, 0.2)
+  z-index: 15
 
   display: flex
   justify-content: center
@@ -405,7 +408,7 @@ export default {
 
   &__inner
     width: 66rem
-    height: 85vh
+    height: 90vh
     z-index: 10
 
     background: $white
@@ -477,6 +480,7 @@ export default {
         width: 2.4rem
         height: 2.4rem
         background: url('https://s3.protocol.one/images/checked.png') no-repeat
+        background-size: contain
 
     &.first
       border: 1px solid #E6E6E6

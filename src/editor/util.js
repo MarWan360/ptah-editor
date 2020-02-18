@@ -64,6 +64,7 @@ export function getTypeFromSchema(target, schema) {
   if (value === types.TextInherit) return 'inline'
   if (value === types.IconWithText) return 'iconWithText'
   if (value === types.VideoElement) return 'video'
+  if (value === types.IframeElement) return 'iframe'
 
   return null
 }
@@ -133,6 +134,7 @@ export function cleanDOM(artboard) {
     .b-button__resize,
     .b-delimiter__resize,
     .b-video__resize,
+    .b-iframe__resize,
     .b-slot__settings,
     .b-section-menu__controls
   `
@@ -425,6 +427,12 @@ export function elemtentList () {
       element: types.Timer,
       type: 'timer',
       label: 'timer'
+    },
+    iframe: {
+      name: 'IframeElement',
+      element: types.IframeElement,
+      type: 'iframe',
+      label: 'iframe'
     }
   }
 }
@@ -482,6 +490,88 @@ export function getFontsSetup (setupFonts) {
   }
 
   return arr.join(';')
+}
+
+/**
+ * Set script for parallax
+ */
+export function getParallaxSetup (sections) {
+  let parallaxSetup = false
+
+  sections.forEach(section => {
+    parallaxSetup = section.data.mainStyle.parallax || parallaxSetup
+  })
+
+  if (parallaxSetup) {
+    return `
+      <script src="${window.location.origin}/js/parallax.min.js"></script>
+      <script>$('._parallax').parallax();</script>
+    `
+  }
+
+  return ''
+}
+
+export function getScrollSetup (fullPageScroll) {
+  let scroll = {
+    style: '',
+    setup: ''
+  }
+
+  if (fullPageScroll === 'yes') {
+    scroll.style = `
+        <link href="${window.location.origin + '/css/onepage-scroll.css'}" rel="stylesheet">
+      `
+    scroll.setup = `
+        <script src="${window.location.origin + '/js/onepage-scroll.min.js'}"></script>
+        <script>
+          function detectMobile () {
+            return $(window).width() < 500 ? true : false;
+          }
+
+          if (!detectMobile()) {
+            $(".main").onepage_scroll();
+          }
+
+          $(window).resize(function() {
+            let className = 'disabled-onepage-scroll';
+            let classWrapName = 'onepage-wrapper';
+
+            if (detectMobile()) {
+              if ($(".main").data("onepage_scroll")){
+                $(".main").disable();
+                $(".main").data("onepage_scroll").destroy();
+
+                if ($(".main").hasClass(classWrapName)) $(".main").removeClass(classWrapName);
+              }
+              $("body").addClass(className);
+              $("body").css('overflow', '')
+
+            } else {
+              if (!$(".main").data("onepage_scroll")){
+                $(".main").onepage_scroll();
+              }
+
+              $("body").css('overflow', 'hidden');
+
+              if ($("body").hasClass(className)) $("body").removeClass(className);
+            }
+          });
+      </script>`
+  }
+
+  return scroll
+}
+
+/**
+ * Set Jquery for page
+ */
+export function getJquerySetup (parallax = '', fullPageScroll ='') {
+  if (fullPageScroll === 'yes' || parallax !== '') {
+    return `<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>`
+  }
+
+  return ``
 }
 
 export const FONT_SIZES_LIST = [
