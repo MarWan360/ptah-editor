@@ -34,8 +34,7 @@ export default {
       bgVideo: '',
       bgVideoPosition: '',
       fullPageScroll: '',
-      imageForColorThief: null,
-      imageForPalette: null
+      imageForColorThief: null
     }
   },
 
@@ -91,6 +90,10 @@ export default {
 
     palette () {
       return this.currentLanding.settings.palette
+    },
+
+    imageForPalette () {
+      return this.currentLanding.settings.imageForPalette
     }
   },
 
@@ -99,14 +102,8 @@ export default {
       this.updateSettings()
     },
 
-    imageForPalette (value) {
-      if (!value) {
-        this.storeSaveSettingsPalette([])
-      }
-    },
-
     imageForColorThief (images) {
-      const image = images[0]
+      const image = images[0] || images
       const reader = new FileReader()
       const preview = document.createElement('img')
       const colorThief = new ColorThief()
@@ -124,7 +121,7 @@ export default {
         const palette = colorThief.getPalette(preview).map(c => {
           return this.getHexColor(c)
         })
-        this.storeSaveSettingsPalette(palette)
+        this.storeSaveSettingsPalette({ palette: palette, image: this.imagePalette })
       }, 1000)
     }
   },
@@ -151,6 +148,7 @@ export default {
       this.bgVideo = settings.video
       this.bgVideoPosition = settings.videoPosition
       this.fullPageScroll = settings.fullPageScroll
+      this.imagePalette = this.imageForPalette
     },
     applySettings () {
       let backgroundColor
@@ -193,6 +191,13 @@ export default {
       }).join('')
 
       return `#${rgbToHex}`
+    },
+
+    changeImagePalette (value) {
+      if (value === null) {
+        console.log(value)
+        this.storeSaveSettingsPalette({ palette: null, image: null })
+      }
     }
   }
 }
@@ -251,11 +256,13 @@ export default {
       <div class="b-builder-site-settings-visual__row">
         <div class="b-builder-site-settings-visual__col">
           <base-uploader
-            v-model="imageForPalette"
+            v-model="imagePalette"
+            @change="changeImagePalette"
             :label="'Image for palette'"
             :tooltipText="'Load image for generate palette of page'"
             @getInputSrcFiles="getInputSrcFiles"
-          />
+          >
+          </base-uploader>
         </div>
         <div class="b-builder-site-settings-visual__col" v-if="palette">
           <div class="b-palette">

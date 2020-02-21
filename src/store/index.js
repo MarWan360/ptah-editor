@@ -39,6 +39,7 @@ const state = {
     settings: {
       fonts: FONTS,
       setupFonts: SETUP_FONTS,
+      imageForPalette: null,
       palette: []
     }
   },
@@ -333,9 +334,10 @@ const actions = {
    *
    * @param {Array} colors
    */
-  storeSaveSettingsPalette ({ state, commit }, palette) {
+  storeSaveSettingsPalette ({ state, commit }, { palette, image }) {
     const landingData = _.merge({}, state.currentLanding.settings, {
-      palette: palette
+      palette: palette,
+      imageForPalette: image
     })
 
     commit('updateCurrentLandingSettings', landingData)
