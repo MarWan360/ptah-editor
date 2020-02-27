@@ -121,7 +121,7 @@ export default {
         const palette = colorThief.getPalette(preview).map(c => {
           return this.getHexColor(c)
         })
-        this.storeSaveSettingsPalette({ palette: palette, image: this.imagePalette })
+        this.storeSaveSettingsPalette({ palette: _.uniqBy(palette), image: this.imagePalette })
       }, 1000)
     }
   },
@@ -195,7 +195,6 @@ export default {
 
     changeImagePalette (value) {
       if (value === null) {
-        console.log(value)
         this.storeSaveSettingsPalette({ palette: null, image: null })
       }
     }

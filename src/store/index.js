@@ -336,9 +336,10 @@ const actions = {
    */
   storeSaveSettingsPalette ({ state, commit }, { palette, image }) {
     const landingData = _.merge({}, state.currentLanding.settings, {
-      palette: palette,
       imageForPalette: image
     })
+
+    landingData.palette = palette
 
     commit('updateCurrentLandingSettings', landingData)
     commit('isSaved', false)
