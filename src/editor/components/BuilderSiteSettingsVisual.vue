@@ -270,8 +270,8 @@ export default {
             </div>
             <ul class="b-palette__list">
               <li
-                v-for="color in palette"
-                :key="color"
+                v-for="(color, index) in palette"
+                :key="color + index"
                 :style="{'background-color' : color}"
                 class="b-palette__list-item"
               />
