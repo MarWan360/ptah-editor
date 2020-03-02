@@ -24,6 +24,8 @@ import en from '@assets/lang/en.json'
 import ru from '@assets/lang/ru.json'
 
 import { truncate } from '@src/filters/truncate'
+import Raven from 'raven-js'
+import RavenVue from 'raven-js/plugins/vue'
 
 Vue.use(VueRouter)
 Vue.use(Vuex)
@@ -120,3 +122,8 @@ new Vue(
     i18n
   }
 ).$mount('#root')
+
+Raven
+  .config(process.env.VUE_SENTRY)
+  .addPlugin(RavenVue, Vue)
+  .install()
