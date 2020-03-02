@@ -143,7 +143,7 @@ export default {
 
               return Promise.resolve(response)
             } else {
-              return this.fetchLandingFromFile({ slug: response._id, url: url })
+              return this.fetchLandingFromFile({ slug: response._id, url: url, name: this.newPageTitle })
             }
           })
           .then((data) => {

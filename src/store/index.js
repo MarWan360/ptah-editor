@@ -163,7 +163,7 @@ const actions = {
    * @param slug
    * @returns {Promise<Response>}
    */
-  fetchLandingFromFile ({ commit }, { slug, url }) {
+  fetchLandingFromFile ({ commit }, { slug, url, name }) {
     return fetch(url)
       .then((response) => {
         return response.json()
@@ -172,7 +172,11 @@ const actions = {
         data['slug'] = slug
 
         if (state.name === '' && data.title !== '') {
-          commit('name', data.title)
+          commit('name', name)
+        }
+
+        if (!data.settings.name) {
+          data.settings['name'] = name
         }
 
         if (!data.settings.fonts) {
