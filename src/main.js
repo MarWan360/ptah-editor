@@ -50,11 +50,16 @@ Vue.use(VueScrollTo, {
   y: true
 })
 
-if (process.env.VUE_GTAG !== undefined) {
+if (process.env.VUE_APP_GTAG !== undefined) {
   Vue.use(VueGtag, {
-    config: { id: process.env.VUE_GTAG }
+    config: { id: process.env.VUE_APP_GTAG }
   })
 }
+
+Raven
+  .config(process.env.PUBLIC_HOST === 'http://ptah.super.com/' ? process.env.VUE_APP_SENTRY : process.env.VUE_APP_SENTRYTST)
+  .addPlugin(RavenVue, Vue)
+  .install()
 
 sync(store, router)
 
@@ -122,8 +127,3 @@ new Vue(
     i18n
   }
 ).$mount('#root')
-
-Raven
-  .config(process.env.VUE_SENTRY)
-  .addPlugin(RavenVue, Vue)
-  .install()
