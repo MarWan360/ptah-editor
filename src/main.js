@@ -55,11 +55,12 @@ if (process.env.VUE_APP_GTAG !== undefined) {
     config: { id: process.env.VUE_APP_GTAG }
   })
 }
-
-Raven
-  .config(process.env.PUBLIC_HOST === 'http://ptah.super.com/' ? process.env.VUE_APP_SENTRY : process.env.VUE_APP_SENTRYTST)
-  .addPlugin(RavenVue, Vue)
-  .install()
+if (process.env.NODE_ENV === 'production') {
+  Raven
+    .config(process.env.PUBLIC_HOST === 'http://ptah.super.com/' ? process.env.VUE_APP_SENTRY : process.env.VUE_APP_SENTRYTST)
+    .addPlugin(RavenVue, Vue)
+    .install()
+}
 
 sync(store, router)
 
