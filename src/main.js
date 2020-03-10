@@ -57,7 +57,10 @@ if (process.env.VUE_APP_GTAG !== undefined) {
 }
 if (process.env.NODE_ENV === 'production') {
   Raven
-    .config(process.env.PUBLIC_HOST === 'http://ptah.super.com/' ? process.env.VUE_APP_SENTRY : process.env.VUE_APP_SENTRYTST)
+    .config(process.env.PUBLIC_HOST === 'http://ptah.super.com/' ? process.env.VUE_APP_SENTRY : process.env.VUE_APP_SENTRYTST,
+      {
+        debug: true
+      })
     .addPlugin(RavenVue, Vue)
     .install()
 }
